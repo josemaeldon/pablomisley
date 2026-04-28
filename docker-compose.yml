@@ -3,23 +3,12 @@ version: '3.8'
 services:
   backend:
     image: ghcr.io/josemaeldon/pablomisley-backend:latest
-    working_dir: /usr/src/app
-    command: npm start
     networks:
       - app-network
-    volumes:
-      - backend-data:/usr/src/app
     environment:
       NODE_ENV: production
       PORT: 3000
-      DB_CONNECTION: pgsql
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_DATABASE: pablomisley
-      DB_USERNAME: postgres
-      DB_PASSWORD: postgres
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      DATABASE_URL: postgres://postgres:postgres@database:5432/pablomisley
     deploy:
       replicas: 1
       restart_policy:
@@ -35,8 +24,6 @@ services:
     image: ghcr.io/josemaeldon/pablomisley-frontend:latest
     networks:
       - app-network
-    volumes:
-      - frontend-data:/usr/src/app
     deploy:
       replicas: 1
       restart_policy:
@@ -49,10 +36,10 @@ services:
         order: start-first
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+        - "traefik.http.routers.frontend.rule=Host(`pablomisley.com`)"
         - "traefik.http.routers.frontend.entrypoints=websecure"
         - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+        - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
   database:
     image: postgres:15
@@ -74,62 +61,11 @@ services:
         constraints:
           - node.role == manager
 
-  redis:
-    image: redis:7
-    volumes:
-      - redis-data:/data
-    networks:
-      - app-network
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-
-  traefik:
-    image: traefik:v2.10
-    command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.swarmMode=true"
-      - "--providers.docker.exposedByDefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
-      - "--certificatesresolvers.letsencryptresolver.acme.email=youremail@example.com"
-      - "--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - letsencrypt-data:/letsencrypt
-    networks:
-      - app-network
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      placement:
-        constraints:
-          - node.role == manager
-
 networks:
   app-network:
     driver: overlay
     attachable: true
 
 volumes:
-  backend-data:
-    driver: local
-  frontend-data:
-    driver: local
   db-data:
-    driver: local
-  redis-data:
-    driver: local
-  letsencrypt-data:
     driver: local
