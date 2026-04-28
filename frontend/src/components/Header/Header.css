@@ -1,0 +1,42 @@
+.header {
+  background-color: #f8f8f8;
+  padding: 20px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header .logo h1 {
+  font-size: 24px;
+  color: #333;
+  margin: 0;
+}
+
+.header .logo p {
+  font-size: 14px;
+  color: #777;
+  margin: 0;
+}
+
+.header .nav ul {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+}
+
+.header .nav ul li a {
+  text-decoration: none;
+  color: #333;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+.header .nav ul li a:hover {
+  color: #d4a373;
+}
