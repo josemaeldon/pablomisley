@@ -33,8 +33,6 @@ services:
 
   frontend:
     image: ghcr.io/josemaeldon/pablomisley-frontend:latest
-    working_dir: /usr/src/app
-    command: npm start
     networks:
       - app-network
     volumes:
