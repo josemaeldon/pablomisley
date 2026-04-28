@@ -2,14 +2,13 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/josemaeldon/pablomisley-backend:latest
     working_dir: /usr/src/app
     command: npm start
     networks:
       - app-network
     volumes:
-      - ./backend:/usr/src/app
+      - backend-data:/usr/src/app
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -21,18 +20,41 @@ services:
       DB_PASSWORD: postgres
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
 
   frontend:
-    build:
-      context: ./frontend
+    image: ghcr.io/josemaeldon/pablomisley-frontend:latest
     working_dir: /usr/src/app
     command: npm start
-    ports:
-      - "3001:3000"
     networks:
       - app-network
     volumes:
-      - ./frontend:/usr/src/app
+      - frontend-data:/usr/src/app
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+        - "traefik.http.routers.frontend.entrypoints=websecure"
+        - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   database:
     image: postgres:15
@@ -44,17 +66,36 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - app-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
 
   redis:
     image: redis:7
+    volumes:
+      - redis-data:/data
     networks:
       - app-network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
 
   traefik:
     image: traefik:v2.10
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencryptresolver.acme.tlschallenge=true"
@@ -64,21 +105,33 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt-data:/letsencrypt
     networks:
       - app-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=letsencryptresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      placement:
+        constraints:
+          - node.role == manager
 
 networks:
   app-network:
-    driver: bridge
+    driver: overlay
+    attachable: true
 
 volumes:
+  backend-data:
+    driver: local
+  frontend-data:
+    driver: local
   db-data:
+    driver: local
+  redis-data:
+    driver: local
+  letsencrypt-data:
     driver: local
