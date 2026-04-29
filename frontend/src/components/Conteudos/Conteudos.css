@@ -1,0 +1,114 @@
+.conteudos-page {
+  padding: 56px 0;
+  background: #fff;
+  min-height: 60vh;
+}
+
+.conteudos-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.conteudos-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.conteudos-page__back:hover { color: #c9a435; }
+
+.conteudos-page__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.conteudos-page__accent {
+  width: 4px;
+  height: 28px;
+  background: #c9a435;
+  border-radius: 2px;
+}
+
+.conteudos-page__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.conteudos-page__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* reuse home card styles */
+.conteudo-card { cursor: pointer; }
+.conteudo-card__thumb {
+  position: relative;
+  aspect-ratio: 4/3;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e8e0d0;
+  margin-bottom: 12px;
+}
+.conteudo-card__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+.conteudo-card:hover .conteudo-card__thumb img { transform: scale(1.04); }
+.conteudo-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #ddd6c8 0%, #c8bfb0 100%);
+}
+.conteudo-card__icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.conteudo-card__cat {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #c9a435;
+  display: block;
+  margin-bottom: 6px;
+}
+.conteudo-card__desc {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .conteudos-page__grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .conteudos-page__grid { grid-template-columns: 1fr; }
+}

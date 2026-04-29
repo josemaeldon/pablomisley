@@ -38,6 +38,30 @@
   background: #f5f0e8;
   overflow: hidden;
   min-height: 540px;
+  position: relative;
+}
+.hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.hero__bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+.hero__bg-fade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(245, 240, 232, 0.97) 0%,
+    rgba(245, 240, 232, 0.90) 35%,
+    rgba(245, 240, 232, 0.55) 58%,
+    rgba(245, 240, 232, 0) 100%
+  );
 }
 .hero__inner {
   display: grid;
@@ -46,6 +70,8 @@
   gap: 40px;
   padding-top: 60px;
   padding-bottom: 60px;
+  position: relative;
+  z-index: 1;
 }
 .hero__cross {
   display: block;
@@ -84,13 +110,6 @@
   align-items: flex-end;
   height: 460px;
 }
-.hero__image {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-  object-position: top;
-  border-radius: 4px;
-}
 .hero__image-placeholder {
   width: 100%;
   height: 100%;
@@ -112,12 +131,16 @@
 .pilares__grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  gap: 0;
 }
 .pilar {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  padding: 0 32px;
+}
+.pilar + .pilar {
+  border-left: 1px solid #ede8df;
 }
 .pilar__icon-wrap {
   flex-shrink: 0;
@@ -428,6 +451,8 @@
 /* ── Responsive ── */
 @media (max-width: 1024px) {
   .pilares__grid { grid-template-columns: repeat(2, 1fr); }
+  .pilares__grid .pilar:nth-child(2n+1) { border-left: none; }
+  .pilares__grid .pilar:nth-child(n+3) { border-top: 1px solid #ede8df; padding-top: 32px; margin-top: 32px; }
   .conteudos__grid { grid-template-columns: repeat(2, 1fr); }
   .loja__inner { grid-template-columns: 1fr; }
 }
@@ -435,7 +460,16 @@
 @media (max-width: 768px) {
   .hero__inner { grid-template-columns: 1fr; }
   .hero__image-wrap { height: 300px; }
+  .hero__bg-fade {
+    background: linear-gradient(
+      to bottom,
+      rgba(245, 240, 232, 0.97) 0%,
+      rgba(245, 240, 232, 0.88) 55%,
+      rgba(245, 240, 232, 0) 100%
+    );
+  }
   .pilares__grid { grid-template-columns: 1fr; }
+  .pilares__grid .pilar + .pilar { border-left: none; border-top: 1px solid #ede8df; padding-top: 24px; margin-top: 8px; }
   .conteudos__grid { grid-template-columns: 1fr 1fr; }
   .banner { grid-template-columns: 1fr; }
   .produto-card { flex: 0 0 calc(50% - 8px); min-width: calc(50% - 8px); }
