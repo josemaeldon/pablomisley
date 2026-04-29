@@ -305,6 +305,37 @@ app.put('/api/admin/hero-slides', authMiddleware, async (req, res) => {
   }
 });
 
+app.post('/api/admin/hero-slides', authMiddleware, async (req, res) => {
+  const { ordem, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO hero_slides (ordem, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,NOW()) RETURNING *',
+      [ordem || 0, titulo || '', subtitulo || '', descricao || '', btn1_texto || '', btn2_texto || '', imagem_url || '']
+    );
+    res.json(result.rows[0]);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/admin/hero-slides/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const { ordem, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url } = req.body;
+  try {
+    await pool.query(
+      'UPDATE hero_slides SET ordem=$1,titulo=$2,subtitulo=$3,descricao=$4,btn1_texto=$5,btn2_texto=$6,imagem_url=$7,updated_at=NOW() WHERE id=$8',
+      [ordem || 0, titulo || '', subtitulo || '', descricao || '', btn1_texto || '', btn2_texto || '', imagem_url || '', id]
+    );
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.delete('/api/admin/hero-slides/:id', authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM hero_slides WHERE id=$1', [id]);
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // Pilares
 app.get('/api/admin/pilares', authMiddleware, async (req, res) => {
   try {
