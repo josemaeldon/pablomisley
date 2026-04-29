@@ -1,26 +1,21 @@
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
   margin: 0;
-  font-family: 'Arial', sans-serif;
+  font-family: 'Inter', 'Arial', sans-serif;
   line-height: 1.6;
-  color: #333;
+  color: #1a1a1a;
+  background: #fff;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
 }
 
-button {
-  cursor: pointer;
-}
+button { cursor: pointer; }
 
-a {
-  text-decoration: none;
-  color: inherit;
-}
+a { text-decoration: none; color: inherit; }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
+img { max-width: 100%; height: auto; }
