@@ -1,22 +1,52 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const { Pool } = require('pg');
 const fs = require('fs');
 
 // PostgreSQL connection setup
-const pool = new Pool({
+let pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Test database connection
-pool.connect()
-  .then(() => console.log('Connected to PostgreSQL'))
-  .catch((err) => console.error('Database connection error:', err));
+const CREATE_TABLES_SQL = `
+  CREATE TABLE IF NOT EXISTS example_table (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+`;
+
+async function connectWithRetry(retries = 10, delay = 3000) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const client = await pool.connect();
+      console.log('Connected to PostgreSQL');
+      await client.query(CREATE_TABLES_SQL);
+      console.log('Database initialized');
+      client.release();
+      return;
+    } catch (err) {
+      console.error(`Database connection attempt ${attempt}/${retries} failed:`, err.message);
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      } else {
+        throw new Error('Could not connect to the database after ' + retries + ' attempts.');
+      }
+    }
+  }
+}
 
 // Middleware
 app.use(express.json());
+
+const setupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many setup requests, please try again later.',
+});
 
 // Routes
 app.get('/', (req, res) => {
@@ -34,25 +64,44 @@ app.get('/api/data', async (req, res) => {
 });
 
 // Route to handle database configuration
-app.post('/api/setup', async (req, res) => {
+app.post('/api/setup', setupLimiter, async (req, res) => {
   const { host, user, password, database } = req.body;
 
-  // Save configuration to .env file
-  const envContent = `DATABASE_URL=postgres://${user}:${password}@${host}:5432/${database}`;
-  fs.writeFileSync('.env', envContent);
+  const connectionString = `postgres://${user}:${password}@${host}:5432/${database}`;
 
-  // Test database connection
+  // Test database connection with the new credentials
+  let newPool;
   try {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-    await pool.connect();
+    newPool = new Pool({ connectionString });
+    const client = await newPool.connect();
+    await client.query(CREATE_TABLES_SQL);
+    client.release();
+
+    // Persist configuration and swap active pool
+    fs.writeFileSync('.env', `DATABASE_URL=${connectionString}\n`);
+    process.env.DATABASE_URL = connectionString;
+    const oldPool = pool;
+    pool = newPool;
+    await oldPool.end();
+
     res.status(200).send('Database configured successfully!');
   } catch (err) {
     console.error('Database connection error:', err);
+    if (newPool) {
+      await newPool.end().catch(() => {});
+    }
     res.status(500).send('Failed to connect to the database.');
   }
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+connectWithRetry()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
