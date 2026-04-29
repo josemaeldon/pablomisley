@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import './Header.css';
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoImagem, setLogoImagem] = useState('');
+
+  useEffect(() => {
+    axios.get('/api/configuracoes').then(r => {
+      if (r.data && r.data.logo_imagem) setLogoImagem(r.data.logo_imagem);
+    }).catch(() => {});
+  }, []);
 
   return (
     <header className="header">
       <div className="container header__inner">
         <Link to="/" className="header__logo">
           <div className="header__logo-mark">
-            <span className="header__logo-pm">Pm</span>
+            {logoImagem ? (
+              <img src={logoImagem} alt="Logo" className="header__logo-img" />
+            ) : (
+              <span className="header__logo-pm">Pm</span>
+            )}
           </div>
           <div className="header__logo-text">
             <span className="header__logo-name">PABLO MISLEY</span>

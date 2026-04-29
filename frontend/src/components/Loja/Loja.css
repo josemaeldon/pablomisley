@@ -1,0 +1,108 @@
+.loja-page {
+  padding: 56px 0;
+  background: #f8f5ef;
+  min-height: 60vh;
+}
+
+.loja-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.loja-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.loja-page__back:hover { color: #c9a435; }
+
+.loja-page__title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.loja-page__icon { margin-top: 4px; flex-shrink: 0; }
+
+.loja-page__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #888;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.loja-page__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.loja-page__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* reuse home product card styles */
+.produto-card {
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 16px;
+  cursor: pointer;
+}
+.produto-card__img {
+  aspect-ratio: 1;
+  background: #f5f0e8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.produto-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+.produto-card:hover .produto-card__img img { transform: scale(1.04); }
+.produto-card__placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #e8e0d0, #d4c8b4);
+}
+.produto-card__nome {
+  font-size: 13px;
+  color: #333;
+  margin: 10px 12px 4px;
+  line-height: 1.4;
+}
+.produto-card__preco {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 12px;
+}
+
+@media (max-width: 1024px) {
+  .loja-page__grid { grid-template-columns: repeat(2, 1fr); }
+}

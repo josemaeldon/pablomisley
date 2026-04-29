@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './Home.css';
 
@@ -92,6 +93,7 @@ function ContentIcon({ tipo }) {
 }
 
 const Home = () => {
+  const navigate = useNavigate();
   const [hero, setHero] = useState(DEFAULTS.hero);
   const [pilares, setPilares] = useState(DEFAULTS.pilares);
   const [conteudos, setConteudos] = useState(DEFAULTS.conteudos);
@@ -123,6 +125,12 @@ const Home = () => {
     <main className="home" id="inicio">
       {/* ── HERO ── */}
       <section className="hero">
+        {imgSrc(hero.imagem_url) && (
+          <div className="hero__bg">
+            <img src={imgSrc(hero.imagem_url)} alt="Padre Pablo Misley" className="hero__bg-img" />
+            <div className="hero__bg-fade" />
+          </div>
+        )}
         <div className="container hero__inner">
           <div className="hero__content">
             <span className="hero__cross">+</span>
@@ -139,9 +147,7 @@ const Home = () => {
             </div>
           </div>
           <div className="hero__image-wrap">
-            {imgSrc(hero.imagem_url) ? (
-              <img src={imgSrc(hero.imagem_url)} alt="Padre Pablo Misley" className="hero__image" />
-            ) : (
+            {!imgSrc(hero.imagem_url) && (
               <div className="hero__image-placeholder">
                 <svg width="80" height="80" fill="none" stroke="#c9a435" strokeWidth="1" viewBox="0 0 24 24" opacity="0.4">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -180,7 +186,7 @@ const Home = () => {
               <div className="conteudos__accent" />
               <h2 className="conteudos__title">Conteúdos para alimentar sua fé</h2>
             </div>
-            <button className="btn btn--ver">VER TODOS OS CONTEÚDOS</button>
+            <button className="btn btn--ver" onClick={() => navigate('/conteudos')}>VER TODOS OS CONTEÚDOS</button>
           </div>
           <div className="conteudos__grid">
             {conteudos.map(c => (
@@ -217,7 +223,7 @@ const Home = () => {
             </div>
             <span className="loja__label">Loja</span>
             <h2 className="loja__title">{config.loja_titulo || DEFAULTS.config.loja_titulo}</h2>
-            <button className="btn btn--primary">IR PARA A LOJA</button>
+            <button className="btn btn--primary" onClick={() => navigate('/loja')}>IR PARA A LOJA</button>
           </div>
           <div className="loja__carousel-wrap">
             <button className="loja__arrow loja__arrow--prev" onClick={prevSlide} disabled={carouselIdx === 0}>
