@@ -16,8 +16,8 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 let pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-// Uploads directory
-const uploadsDir = path.join(__dirname, '..', 'uploads');
+// Uploads directory (use process.cwd() so volume mount matches WORKDIR)
+const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const storage = multer.diskStorage({

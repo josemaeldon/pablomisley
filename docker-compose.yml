@@ -13,7 +13,7 @@ services:
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: admin123
     volumes:
-      - uploads-data:/app/uploads
+      - uploads-data:/usr/src/app/uploads
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
       interval: 10s
