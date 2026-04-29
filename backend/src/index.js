@@ -37,6 +37,18 @@ const upload = multer({
 });
 
 const CREATE_TABLES_SQL = `
+  CREATE TABLE IF NOT EXISTS hero_slides (
+    id SERIAL PRIMARY KEY,
+    ordem INTEGER NOT NULL DEFAULT 0,
+    titulo VARCHAR(255) DEFAULT 'Tudo para a glória de Deus.',
+    subtitulo VARCHAR(500) DEFAULT '"Para mim, o viver é Cristo" (Filipenses 1,21)',
+    descricao TEXT DEFAULT 'Padre Pablo Misley, sacerdote católico, dedica sua vida à evangelização através da música, da Palavra e do serviço.',
+    btn1_texto VARCHAR(100) DEFAULT 'CONHEÇA MINHA HISTÓRIA',
+    btn2_texto VARCHAR(100) DEFAULT 'ACOMPANHE OS CONTEÚDOS',
+    imagem_url VARCHAR(500) DEFAULT '',
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+
   CREATE TABLE IF NOT EXISTS hero (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) DEFAULT 'Tudo para a glória de Deus.',
@@ -48,6 +60,10 @@ const CREATE_TABLES_SQL = `
     updated_at TIMESTAMP DEFAULT NOW()
   );
   INSERT INTO hero (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+  INSERT INTO hero_slides (ordem, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url)
+  SELECT 1, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url
+  FROM hero
+  WHERE id = 1 AND NOT EXISTS (SELECT 1 FROM hero_slides);
 
   CREATE TABLE IF NOT EXISTS pilares (
     id SERIAL PRIMARY KEY,
@@ -118,6 +134,7 @@ const CREATE_TABLES_SQL = `
     ('citacao_referencia','FILIPENSES 4,13'),
     ('footer_descricao','Sacerdote católico, missionário, servo da Palavra e do Altar.'),
     ('loja_titulo','Artigos que ajudam você a viver sua fé todos os dias.'),
+    ('logo_imagem',''),
     ('newsletter_imagem',''),
     ('citacao_imagem','')
   ON CONFLICT (chave) DO NOTHING;
@@ -170,6 +187,13 @@ app.get('/api/hero', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM hero WHERE id = 1');
     res.json(result.rows[0] || {});
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/hero-slides', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM hero_slides ORDER BY ordem, id LIMIT 4');
+    res.json(result.rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
@@ -239,6 +263,46 @@ app.put('/api/admin/hero', authMiddleware, async (req, res) => {
     );
     res.json({ ok: true });
   } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.get('/api/admin/hero-slides', authMiddleware, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM hero_slides ORDER BY ordem, id LIMIT 4');
+    res.json(result.rows);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+app.put('/api/admin/hero-slides', authMiddleware, async (req, res) => {
+  const slides = Array.isArray(req.body.slides) ? req.body.slides.slice(0, 4) : [];
+  if (!slides.length) return res.status(400).json({ error: 'Adicione pelo menos um slide.' });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM hero_slides');
+    for (let i = 0; i < slides.length; i += 1) {
+      const slide = slides[i] || {};
+      await client.query(
+        'INSERT INTO hero_slides (ordem, titulo, subtitulo, descricao, btn1_texto, btn2_texto, imagem_url, updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7,NOW())',
+        [
+          Number(slide.ordem) || i + 1,
+          slide.titulo || '',
+          slide.subtitulo || '',
+          slide.descricao || '',
+          slide.btn1_texto || '',
+          slide.btn2_texto || '',
+          slide.imagem_url || '',
+        ]
+      );
+    }
+    await client.query('COMMIT');
+    res.json({ ok: true });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
 });
 
 // Pilares

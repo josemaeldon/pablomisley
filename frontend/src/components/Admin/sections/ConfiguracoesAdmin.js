@@ -10,6 +10,7 @@ const DEFAULTS = {
   citacao_referencia: '',
   loja_titulo: '',
   footer_descricao: '',
+  logo_imagem: '',
   newsletter_imagem: '',
   citacao_imagem: '',
 };
@@ -80,6 +81,12 @@ const ConfiguracoesAdmin = () => {
             <textarea className="admin-textarea" value={form.loja_titulo}
               onChange={e => set('loja_titulo', e.target.value)} />
           </div>
+        </div>
+
+        <div className="admin-card" style={{ marginBottom: 16 }}>
+          <h2 className="admin-card__title" style={{ marginBottom: 20 }}>Logo do Site</h2>
+          <ImageUpload label="Imagem da Logo (substitui o texto Pm)" value={form.logo_imagem}
+            onChange={v => set('logo_imagem', v)} />
         </div>
 
         <div className="admin-card" style={{ marginBottom: 24 }}>

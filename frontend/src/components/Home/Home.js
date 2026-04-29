@@ -4,6 +4,40 @@ import axios from 'axios';
 import './Home.css';
 
 const DEFAULTS = {
+  heroSlides: [
+    {
+      titulo: 'Tudo para a glória de Deus.',
+      subtitulo: '"Para mim, o viver é Cristo" (Filipenses 1,21)',
+      descricao: 'Padre Pablo Misley, sacerdote católico, dedica sua vida à evangelização através da música, da Palavra e do serviço.',
+      btn1_texto: 'CONHEÇA MINHA HISTÓRIA',
+      btn2_texto: 'ACOMPANHE OS CONTEÚDOS',
+      imagem_url: '',
+    },
+    {
+      titulo: 'Palavra, música e missão.',
+      subtitulo: 'Uma fé que toca, forma e envia.',
+      descricao: 'Conteúdos, evangelização e presença para fortalecer sua caminhada com Cristo.',
+      btn1_texto: 'VER CONTEÚDOS',
+      btn2_texto: 'SABER MAIS',
+      imagem_url: '',
+    },
+    {
+      titulo: 'Uma vida entregue ao Altar.',
+      subtitulo: 'Missão, comunhão e caridade.',
+      descricao: 'Acompanhe mensagens, reflexões e iniciativas que aproximam você da fé vivida no dia a dia.',
+      btn1_texto: 'ACOMPANHAR A MISSÃO',
+      btn2_texto: 'IR PARA A LOJA',
+      imagem_url: '',
+    },
+    {
+      titulo: 'Formação para viver o Evangelho.',
+      subtitulo: 'Cristo no centro de tudo.',
+      descricao: 'Um espaço para crescer na fé com conteúdos e recursos preparados para sua caminhada.',
+      btn1_texto: 'COMEÇAR AGORA',
+      btn2_texto: 'VER AGENDA',
+      imagem_url: '',
+    },
+  ],
   hero: {
     titulo: 'Tudo para a glória de Deus.',
     subtitulo: '"Para mim, o viver é Cristo" (Filipenses 1,21)',
@@ -94,7 +128,8 @@ function ContentIcon({ tipo }) {
 
 const Home = () => {
   const navigate = useNavigate();
-  const [hero, setHero] = useState(DEFAULTS.hero);
+  const [heroSlides, setHeroSlides] = useState(DEFAULTS.heroSlides);
+  const [heroIndex, setHeroIndex] = useState(0);
   const [pilares, setPilares] = useState(DEFAULTS.pilares);
   const [conteudos, setConteudos] = useState(DEFAULTS.conteudos);
   const [produtos, setProdutos] = useState(DEFAULTS.produtos);
@@ -105,56 +140,93 @@ const Home = () => {
   const carouselRef = useRef(null);
 
   useEffect(() => {
-    axios.get('/api/hero').then(r => r.data && r.data.id && setHero(r.data)).catch(() => {});
+    axios.get('/api/hero-slides').then(r => {
+      if (Array.isArray(r.data) && r.data.length) setHeroSlides(r.data.slice(0, 4));
+    }).catch(() => {});
     axios.get('/api/pilares').then(r => r.data?.length && setPilares(r.data)).catch(() => {});
     axios.get('/api/conteudos').then(r => r.data?.length && setConteudos(r.data)).catch(() => {});
     axios.get('/api/produtos').then(r => r.data?.length && setProdutos(r.data)).catch(() => {});
     axios.get('/api/configuracoes').then(r => r.data && setConfig(c => ({ ...c, ...r.data }))).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (heroSlides.length < 2) return undefined;
+    const timer = setInterval(() => {
+      setHeroIndex(current => (current + 1) % heroSlides.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
+
   const maxIdx = Math.max(0, produtos.length - visibleProducts);
   const prevSlide = () => setCarouselIdx(i => Math.max(0, i - 1));
   const nextSlide = () => setCarouselIdx(i => Math.min(maxIdx, i + 1));
+  const nextHeroSlide = () => setHeroIndex(index => (index + 1) % heroSlides.length);
+  const goToHeroSlide = (index) => setHeroIndex(index);
 
   const imgSrc = (url, fallback) => url && url.trim() ? url : fallback || null;
-
-  const heroTitle = hero.titulo || DEFAULTS.hero.titulo;
-  const titleParts = heroTitle.split(/(glória de Deus\.|glória de Deus)/i);
 
   return (
     <main className="home" id="inicio">
       {/* ── HERO ── */}
       <section className="hero">
-        {imgSrc(hero.imagem_url) && (
-          <div className="hero__bg">
-            <img src={imgSrc(hero.imagem_url)} alt="Padre Pablo Misley" className="hero__bg-img" />
-            <div className="hero__bg-fade" />
+        <div className="hero__slider">
+          {heroSlides.map((slide, index) => {
+            const slideTitle = slide.titulo || DEFAULTS.hero.titulo;
+            const slideParts = slideTitle.split(/(glória de Deus\.|glória de Deus)/i);
+            return (
+              <article key={`${slide.id || index}-${index}`} className={`hero__slide${index === heroIndex ? ' hero__slide--active' : ''}`}>
+                {imgSrc(slide.imagem_url) && (
+                  <div className="hero__bg">
+                    <img src={imgSrc(slide.imagem_url)} alt={slide.titulo || 'Slide do hero'} className="hero__bg-img" />
+                    <div className="hero__bg-fade" />
+                  </div>
+                )}
+                <div className="container hero__inner">
+                  <div className="hero__content">
+                    <span className="hero__cross">+</span>
+                    <h1 className="hero__title">
+                      {slideParts[0]}
+                      {slideParts[1] && <span className="hero__title--gold">{slideParts[1]}</span>}
+                      {slideParts[2]}
+                    </h1>
+                    <p className="hero__quote">{slide.subtitulo || DEFAULTS.hero.subtitulo}</p>
+                    <p className="hero__desc">{slide.descricao || DEFAULTS.hero.descricao}</p>
+                    <div className="hero__btns">
+                      <button className="btn btn--primary">{slide.btn1_texto || DEFAULTS.hero.btn1_texto} →</button>
+                      <button className="btn btn--outline">{slide.btn2_texto || DEFAULTS.hero.btn2_texto}</button>
+                    </div>
+                  </div>
+                  <div className="hero__image-wrap">
+                    {!imgSrc(slide.imagem_url) && (
+                      <div className="hero__image-placeholder">
+                        <svg width="80" height="80" fill="none" stroke="#c9a435" strokeWidth="1" viewBox="0 0 24 24" opacity="0.4">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="container hero__controls">
+          <div className="hero__dots" aria-label="Selecionar slide">
+            {heroSlides.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                className={`hero__dot${index === heroIndex ? ' hero__dot--active' : ''}`}
+                onClick={() => goToHeroSlide(index)}
+                aria-label={`Ir para o slide ${index + 1}`}
+              />
+            ))}
           </div>
-        )}
-        <div className="container hero__inner">
-          <div className="hero__content">
-            <span className="hero__cross">+</span>
-            <h1 className="hero__title">
-              {titleParts[0]}
-              {titleParts[1] && <span className="hero__title--gold">{titleParts[1]}</span>}
-              {titleParts[2]}
-            </h1>
-            <p className="hero__quote">{hero.subtitulo || DEFAULTS.hero.subtitulo}</p>
-            <p className="hero__desc">{hero.descricao || DEFAULTS.hero.descricao}</p>
-            <div className="hero__btns">
-              <button className="btn btn--primary">{hero.btn1_texto || DEFAULTS.hero.btn1_texto} →</button>
-              <button className="btn btn--outline">{hero.btn2_texto || DEFAULTS.hero.btn2_texto}</button>
-            </div>
-          </div>
-          <div className="hero__image-wrap">
-            {!imgSrc(hero.imagem_url) && (
-              <div className="hero__image-placeholder">
-                <svg width="80" height="80" fill="none" stroke="#c9a435" strokeWidth="1" viewBox="0 0 24 24" opacity="0.4">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-                </svg>
-              </div>
-            )}
-          </div>
+          <button type="button" className="hero__next" onClick={nextHeroSlide} aria-label="Próximo slide">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
         </div>
       </section>
 

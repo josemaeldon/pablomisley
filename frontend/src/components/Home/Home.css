@@ -37,8 +37,23 @@
 .hero {
   background: #f5f0e8;
   overflow: hidden;
-  min-height: 540px;
+  min-height: 620px;
   position: relative;
+}
+.hero__slider {
+  position: relative;
+  min-height: 620px;
+}
+.hero__slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+.hero__slide--active {
+  opacity: 1;
+  pointer-events: auto;
 }
 .hero__bg {
   position: absolute;
@@ -69,9 +84,10 @@
   align-items: center;
   gap: 40px;
   padding-top: 60px;
-  padding-bottom: 60px;
+  padding-bottom: 90px;
   position: relative;
   z-index: 1;
+  min-height: 620px;
 }
 .hero__cross {
   display: block;
@@ -118,6 +134,51 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.hero__controls {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.hero__dots {
+  display: flex;
+  gap: 8px;
+}
+.hero__dot {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(26, 26, 26, 0.22);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hero__dot--active {
+  width: 28px;
+  background: #c9a435;
+}
+.hero__next {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.hero__next:hover {
+  background: #c9a435;
+  transform: translateX(2px);
 }
 
 /* ── PILARES ── */
